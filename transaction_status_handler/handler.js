@@ -10,7 +10,8 @@ export const handler = async(event, context, callback) => {
   const confirmed = await isConfirmed(transactionId);
   const response = {
     "transactionId": transactionId,
-    "status": unconfirmed ? "unconfirmed" : confirmed ? "confirmed" : "not_found",
+    "transactionStatus": unconfirmed ? "unconfirmed" : confirmed !== null ? "confirmed" : "not_found",
+    "referenceBoxId": confirmed,
     ...event
   };
   callback(null, response);
@@ -23,6 +24,12 @@ const isMempool = async(transactionId) => {
 
 const isConfirmed = async(transactionId) => {
   const response = await fetch(`${EXPLORER_API}${TRANSACTIONS}/${transactionId}`);
-  return response.status !== 404;
+  const confirmed = response.status !== 404;
+  if (confirmed) {
+    const transaction = await response.json()
+    const boxId = transaction["outputs"][0]["boxId"]
+    return boxId
+  } else {
+    return null;
+  }
 };
-
