@@ -1,0 +1,63 @@
+package sigmarand.transaction
+
+import org.ergoplatform.appkit.{Address, ConstantsBuilder, ErgoToken, ErgoValue, NetworkType, Parameters, RestApiErgoClient, SecretString}
+import org.ergoplatform.appkit.impl.ErgoScriptContract
+import sigmarand.transaction.constant.Constant.{ADDRESS, MNEMONIC, NODE_API_KEY, NODE_URL}
+import sigmarand.transaction.constant.Contract.COMMIT_TRANSACTION_SCRIPT
+
+class CommitTransaction(hashBoxId: String,
+                        random: Array[Byte],
+                        lockingContractAddress: String,
+                        lockingTokenId: String,
+                        lockingTokenAmount: Integer
+                       ) {
+  // setup client
+  private val client = RestApiErgoClient.create(
+    NODE_URL,
+    NetworkType.MAINNET,
+    NODE_API_KEY,
+    RestApiErgoClient.defaultMainnetExplorerUrl
+  )
+
+  def submitTx(): String = {
+    client.execute(ctx => {
+      val commitTransactionScript = ErgoScriptContract.create(
+        ConstantsBuilder.create()
+          .item("runtimePropositionBytes", Address.create(lockingContractAddress).toPropositionBytes)
+          .build(),
+        COMMIT_TRANSACTION_SCRIPT,
+        NetworkType.MAINNET
+      )
+      val contractAddress = commitTransactionScript.toAddress
+      val serverAddress = Address.create(ADDRESS)
+
+      // TODO: add validation for index accesses
+      val inputBox = ctx.getBoxesById(hashBoxId)(0)
+      val outputBox = ctx.newTxBuilder.outBoxBuilder
+        .value(Parameters.MinFee * 2)
+        .tokens(new ErgoToken(lockingTokenId, lockingTokenAmount.longValue()))
+        .registers(inputBox.getRegisters.get(0), ErgoValue.of(random))
+        .contract(contractAddress.toErgoContract)
+        .build()
+      val unsignedTx = ctx.newTxBuilder()
+        .addInputs(inputBox)
+        .addOutputs(outputBox)
+        .fee(Parameters.MinFee)
+        .sendChangeTo(serverAddress)
+        .build()
+
+      val prover = ctx.newProverBuilder
+        .withMnemonic(
+          SecretString.create(MNEMONIC),
+          SecretString.empty(),
+          false
+        )
+        .withEip3Secret(0)
+        .build()
+
+      val signedTx = prover.sign(unsignedTx)
+      val txId = ctx.sendTransaction(signedTx)
+      txId
+    })
+  }
+}

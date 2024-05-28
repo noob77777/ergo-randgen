@@ -1,0 +1,9 @@
+.bsp
+.idea
+out
+project/target
+target
+
+/Class-Documents/.DS_Store
+
+config.json
