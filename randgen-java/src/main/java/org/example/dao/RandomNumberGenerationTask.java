@@ -1,6 +1,7 @@
 package org.example.dao;
 
 import com.google.auto.value.AutoValue;
+import javax.annotation.Nullable;
 
 @AutoValue
 public abstract class RandomNumberGenerationTask {
@@ -8,10 +9,11 @@ public abstract class RandomNumberGenerationTask {
     public abstract String lockingContractAddress();
     public abstract String lockingTokenId();
     public abstract Integer lockingTokenAmount();
-    public abstract String hashBoxId();
-    public abstract String commitBoxId();
-    public abstract String revealBoxId();
+    @Nullable abstract String hashBoxId();
+    @Nullable public abstract String commitBoxId();
+    @Nullable public abstract String revealBoxId();
     public abstract TaskStatus taskStatus();
+    public abstract String transactionId();
 
     public static Builder builder() {
         return new AutoValue_RandomNumberGenerationTask.Builder();
@@ -27,6 +29,7 @@ public abstract class RandomNumberGenerationTask {
         public abstract Builder setCommitBoxId(String commitBoxId);
         public abstract Builder setRevealBoxId(String revealBoxId);
         public abstract Builder setTaskStatus(TaskStatus taskStatus);
+        public abstract Builder setTransactionId(String transactionId);
         public abstract RandomNumberGenerationTask build();
     }
 
