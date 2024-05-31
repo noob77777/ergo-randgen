@@ -18,10 +18,9 @@ public class StepFnInvocator {
         this.stateMachineArn = stateMachineArn;
     }
 
-    public StartExecutionResponse invoke(RandomNumberGenerationTask task) {
-        Gson gson = new GsonBuilder().serializeNulls().create();
+    public StartExecutionResponse invoke(String input) {
         StartExecutionRequest executionRequest = StartExecutionRequest.builder()
-                .input(gson.toJson(task))
+                .input(input)
                 .stateMachineArn(stateMachineArn)
                 .name(UUID.randomUUID().toString())
                 .build();
