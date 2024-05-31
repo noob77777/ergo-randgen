@@ -3,6 +3,8 @@ package sigmarand;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import sigmarand.client.StepFnInvocator;
 import sigmarand.dao.RandomNumberGenerationTask;
 import sigmarand.model.RegisterRandomNumberGenerationTaskRequest;
@@ -22,7 +24,7 @@ public class RegisterRandomNumberGenerationHandler implements RequestHandler<Reg
     @Override
     public RegisterRandomNumberGenerationTaskResponse handleRequest(RegisterRandomNumberGenerationTaskRequest req, Context context) {
         LambdaLogger logger = context.getLogger();
-        logger.log("Sending from: " + req.addresses().getFirst());
+        logger.log("Sending from: " + req.address());
         logger.log("Random hash: " + req.randomHash());
         MUnsignedTransaction registerTransaction = registerTransaction(req);
         RandomNumberGenerationTask task = RandomNumberGenerationTask.builder()
@@ -33,14 +35,17 @@ public class RegisterRandomNumberGenerationHandler implements RequestHandler<Reg
                 .setTransactionId(registerTransaction.id())
                 .setTaskStatus(RandomNumberGenerationTask.TaskStatus.COMMIT_IN_PROGRESS)
                 .build();
-        StartExecutionResponse response = new StepFnInvocator(SfnClient.builder().region(Region.US_EAST_2).build(), STATE_MACHINE_ARN).invoke(task);
+        StartExecutionResponse response = new StepFnInvocator(
+                SfnClient.builder().region(Region.US_EAST_2).build(),
+                STATE_MACHINE_ARN)
+                .invoke(new GsonBuilder().serializeNulls().create().toJson(task));
         logger.log("Invocation successful: " + response.executionArn());
         return new RegisterRandomNumberGenerationTaskResponse(task.taskId(), registerTransaction.toJson());
     }
 
     private MUnsignedTransaction registerTransaction(RegisterRandomNumberGenerationTaskRequest req) {
         return new RegisterTransaction(
-                req.addresses().getFirst(),
+                req.address(),
                 req.randomHash().getBytes(),
                 req.lockingContractAddress(),
                 req.lockingTokenId(),

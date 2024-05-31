@@ -17,10 +17,10 @@ public class SubmitCommitTransactionHandler implements RequestHandler<SubmitComm
     @Override
     public SubmitCommitTransactionResponse handleRequest(SubmitCommitTransactionRequest task, Context context) {
         LambdaLogger logger = context.getLogger();
-        String random = Blake2b256.hash(UUID.randomUUID().toString());
+        byte[] random = Blake2b256.hash(UUID.randomUUID().toString());
         String transactionId = new CommitTransaction(
                 task.hashBoxId(),
-                random.getBytes(),
+                random,
                 task.lockingContractAddress(),
                 task.lockingTokenId(),
                 task.lockingTokenAmount()
