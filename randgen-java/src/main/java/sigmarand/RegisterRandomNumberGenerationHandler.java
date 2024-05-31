@@ -31,7 +31,7 @@ public class RegisterRandomNumberGenerationHandler implements RequestHandler<Reg
                 .setLockingTokenId(req.lockingTokenId())
                 .setLockingTokenAmount(req.lockingTokenAmount())
                 .setTransactionId(registerTransaction.id())
-                .setTaskStatus(RandomNumberGenerationTask.TaskStatus.NOT_STARTED)
+                .setTaskStatus(RandomNumberGenerationTask.TaskStatus.COMMIT_IN_PROGRESS)
                 .build();
         StartExecutionResponse response = new StepFnInvocator(SfnClient.builder().region(Region.US_EAST_2).build(), STATE_MACHINE_ARN).invoke(task);
         logger.log("Invocation successful: " + response.executionArn());

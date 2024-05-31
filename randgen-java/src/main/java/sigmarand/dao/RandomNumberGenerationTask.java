@@ -9,7 +9,7 @@ public abstract class RandomNumberGenerationTask {
     public abstract String lockingContractAddress();
     public abstract String lockingTokenId();
     public abstract Integer lockingTokenAmount();
-    @Nullable abstract String hashBoxId();
+    @Nullable public abstract String hashBoxId();
     @Nullable public abstract String commitBoxId();
     @Nullable public abstract String revealBoxId();
     public abstract TaskStatus taskStatus();
