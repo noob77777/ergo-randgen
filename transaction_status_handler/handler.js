@@ -9,10 +9,10 @@ export const handler = async(event, context, callback) => {
   const unconfirmed = await isMempool(transactionId);
   const confirmed = await isConfirmed(transactionId);
   const response = {
+    ...event,
     "transactionId": transactionId,
     "transactionStatus": unconfirmed ? "unconfirmed" : confirmed !== null ? "confirmed" : "not_found",
-    "referenceBoxId": confirmed,
-    ...event
+    "referenceBoxId": confirmed
   };
   callback(null, response);
 };
