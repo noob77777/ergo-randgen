@@ -1,10 +1,11 @@
 package sigmarand.transaction
 
 import org.ergoplatform.appkit.impl.ErgoScriptContract
-import org.ergoplatform.appkit.{Address, BoxOperations, ConstantsBuilder, ErgoToken, ErgoValue, NetworkType, Parameters, RestApiErgoClient}
+import org.ergoplatform.appkit.{Address, BoxOperations, ConstantsBuilder, ErgoId, ErgoToken, ErgoValue, NetworkType, Parameters, RestApiErgoClient}
 import sigmarand.transaction.constant.Constant.{ADDRESS, NODE_API_KEY, NODE_URL}
 import sigmarand.transaction.constant.Contract.{COMMIT_TRANSACTION_SCRIPT, REGISTER_TRANSACTION_SCRIPT}
 import sigmarand.transaction.model.MUnsignedTransaction
+import sigmarand.transaction.util.Util.hexToBase64
 
 class RegisterTransaction(address: String,
                           randomHash: Array[Byte],
@@ -22,6 +23,9 @@ class RegisterTransaction(address: String,
   private val REFUND_BLOCK_WINDOW = 60
 
   def buildUnsignedTx(): MUnsignedTransaction = {
+    if (randomHash.length != 32) {
+      throw new IllegalArgumentException("Random hash must be Blake2b256 encoded")
+    }
     client.execute(ctx => {
       val deadline = ctx.getHeight + REFUND_BLOCK_WINDOW
       val clientAddress = Address.create(address)
@@ -30,6 +34,8 @@ class RegisterTransaction(address: String,
       val commitTransactionScript = ErgoScriptContract.create(
         ConstantsBuilder.create()
           .item("runtimePropositionBytes", Address.create(lockingContractAddress).toPropositionBytes)
+          .item("tokenId", hexToBase64(lockingTokenId))
+          .item("tokenAmount", lockingTokenAmount.longValue())
           .build(),
         COMMIT_TRANSACTION_SCRIPT,
         NetworkType.MAINNET
@@ -40,6 +46,8 @@ class RegisterTransaction(address: String,
           .item("serverPK", serverAddress.getPublicKey)
           .item("deadline", deadline)
           .item("runtimePropositionBytes", commitTransactionScript.toAddress.toPropositionBytes)
+          .item("tokenId", hexToBase64(lockingTokenId))
+          .item("tokenAmount", lockingTokenAmount.longValue())
           .build(),
         REGISTER_TRANSACTION_SCRIPT,
         NetworkType.MAINNET

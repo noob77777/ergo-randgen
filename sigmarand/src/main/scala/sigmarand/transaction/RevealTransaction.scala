@@ -24,6 +24,9 @@ class RevealTransaction(commitBoxId: String,
   )
 
   def buildUnsignedTx(): MUnsignedTransaction = {
+    if (random.length != 32) {
+      throw new IllegalArgumentException("Random must be 256 bits")
+    }
     client.execute(ctx => {
       val clientAddress = Address.create(address)
       val contractAddress = Address.create(lockingContractAddress)
@@ -50,7 +53,7 @@ class RevealTransaction(commitBoxId: String,
 
   private def xor(r1: Array[Byte], r2: Array[Byte]): Array[Byte] = {
     val res = new ArrayList[Byte]()
-    val l = r2 zipWithIndex;
+    val l = r2 zipWithIndex; // this semi-colon is important
     for (p <- l)
       res.add(((if (r1.length > p._2) r1(p._2) else 0) ^ p._1).toByte)
     res.asScala.toArray

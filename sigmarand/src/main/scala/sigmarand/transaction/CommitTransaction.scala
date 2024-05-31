@@ -4,6 +4,7 @@ import org.ergoplatform.appkit.{Address, ConstantsBuilder, ErgoToken, ErgoValue,
 import org.ergoplatform.appkit.impl.ErgoScriptContract
 import sigmarand.transaction.constant.Constant.{ADDRESS, MNEMONIC, NODE_API_KEY, NODE_URL}
 import sigmarand.transaction.constant.Contract.COMMIT_TRANSACTION_SCRIPT
+import sigmarand.transaction.util.Util.hexToBase64
 
 class CommitTransaction(hashBoxId: String,
                         random: Array[Byte],
@@ -20,10 +21,15 @@ class CommitTransaction(hashBoxId: String,
   )
 
   def submitTx(): String = {
+    if (random.length != 32) {
+      throw new IllegalArgumentException("Random must be 256 bits")
+    }
     client.execute(ctx => {
       val commitTransactionScript = ErgoScriptContract.create(
         ConstantsBuilder.create()
           .item("runtimePropositionBytes", Address.create(lockingContractAddress).toPropositionBytes)
+          .item("tokenId", hexToBase64(lockingTokenId))
+          .item("tokenAmount", lockingTokenAmount.longValue())
           .build(),
         COMMIT_TRANSACTION_SCRIPT,
         NetworkType.MAINNET
