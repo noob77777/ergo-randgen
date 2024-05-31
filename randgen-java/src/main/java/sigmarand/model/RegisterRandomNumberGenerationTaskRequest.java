@@ -1,4 +1,4 @@
-package org.example;
+package sigmarand.model;
 
 import java.util.List;
 

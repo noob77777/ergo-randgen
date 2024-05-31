@@ -1,4 +1,4 @@
-package org.example.dao;
+package sigmarand.dao;
 
 import com.google.auto.value.AutoValue;
 import javax.annotation.Nullable;
@@ -35,6 +35,7 @@ public abstract class RandomNumberGenerationTask {
 
     public enum TaskStatus {
         NOT_STARTED,
+        COMMIT_IN_PROGRESS,
         COMMITED,
         REVEAL_IN_PROGRESS,
         COMPLETED

@@ -1,7 +1,7 @@
-package org.example;
+package sigmarand.client;
 
 import com.google.gson.Gson;
-import org.example.dao.RandomNumberGenerationTask;
+import sigmarand.dao.RandomNumberGenerationTask;
 import software.amazon.awssdk.services.sfn.SfnClient;
 import software.amazon.awssdk.services.sfn.model.StartExecutionRequest;
 import software.amazon.awssdk.services.sfn.model.StartExecutionResponse;
@@ -11,7 +11,7 @@ public class StepFnInvocator {
     private final SfnClient sfnClient;
     private final String stateMachineArn;
 
-    StepFnInvocator(SfnClient sfnClient, String stateMachineArn) {
+    public StepFnInvocator(SfnClient sfnClient, String stateMachineArn) {
         this.sfnClient = sfnClient;
         this.stateMachineArn = stateMachineArn;
     }
