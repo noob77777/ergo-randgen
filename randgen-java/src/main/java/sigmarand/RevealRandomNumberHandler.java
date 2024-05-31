@@ -4,9 +4,9 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import sigmarand.client.StepFnInvocator;
 import sigmarand.dao.RandomNumberGenerationTask;
+import sigmarand.dao.RandomNumberGenerationTaskPojo;
 import sigmarand.model.RevealRandomNumberRequest;
 import sigmarand.model.RevealRandomNumberResponse;
 import sigmarand.transaction.RevealTransaction;
@@ -33,23 +33,20 @@ public class RevealRandomNumberHandler implements RequestHandler<RevealRandomNum
             HttpRequest request = HttpRequest.newBuilder().uri(URI.create(baseUrl + req.taskId())).build();
             HttpResponse<String> response =
                     client.send(request, HttpResponse.BodyHandlers.ofString());
-            logger.log("Response code from DB API: " + response.statusCode());
-            logger.log("Response body:\n" + response.body());
-
-            RandomNumberGenerationTask task = new Gson().fromJson(response.body(), RandomNumberGenerationTask.class);
+            logger.log("DB response body:\n" + response.body());
+            RandomNumberGenerationTaskPojo task = new Gson().fromJson(response.body(), RandomNumberGenerationTaskPojo.class);
             StartExecutionResponse executionResponse = new StepFnInvocator(
                     SfnClient.builder().region(Region.US_EAST_2).build(),
                     STATE_MACHINE_ARN)
                     .invoke(response.body());
-
             logger.log("Execution was successful: " + executionResponse);
             MUnsignedTransaction txn = new RevealTransaction(
-                    task.commitBoxId(),
+                    task.commitBoxId,
                     req.random().getBytes(),
                     req.address(),
-                    task.lockingContractAddress(),
-                    task.lockingTokenId(),
-                    task.lockingTokenAmount()
+                    task.lockingContractAddress,
+                    task.lockingTokenId,
+                    task.lockingTokenAmount
             ).buildUnsignedTx();
             return new RevealRandomNumberResponse(
                     req.taskId(),
