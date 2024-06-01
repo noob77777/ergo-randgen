@@ -5,7 +5,7 @@ def lambda_handler(event, context):
     # Establishing the connection
     try:
         conn = psycopg2.connect(
-        database='rng-dev', user='noob77777', password='hkSzhtwjCoI1SEQ', host='172.31.39.12', port= '5432'
+        database='rng-dev', user='noob77777', password='{password}', host='172.31.39.12', port= '5432'
         )
     except psycopg2.OperationalError as e:
         raise e
