@@ -11,6 +11,7 @@ import sigmarand.model.RevealRandomNumberRequest;
 import sigmarand.model.RevealRandomNumberResponse;
 import sigmarand.transaction.RevealTransaction;
 import sigmarand.transaction.model.MUnsignedTransaction;
+import sigmarand.transaction.util.Util;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sfn.SfnClient;
 import software.amazon.awssdk.services.sfn.model.StartExecutionResponse;
@@ -42,7 +43,7 @@ public class RevealRandomNumberHandler implements RequestHandler<RevealRandomNum
             logger.log("Execution was successful: " + executionResponse);
             MUnsignedTransaction txn = new RevealTransaction(
                     task.commitBoxId,
-                    req.random().getBytes(),
+                    Util.hexToBase64(req.random()),
                     req.address(),
                     task.lockingContractAddress,
                     task.lockingTokenId,
