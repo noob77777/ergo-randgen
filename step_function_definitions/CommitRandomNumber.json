@@ -131,9 +131,9 @@
           "BackoffRate": 2
         }
       ],
-      "Next": "Choice"
+      "Next": "IsConfirmedAgain"
     },
-    "Choice": {
+    "IsConfirmedAgain": {
       "Type": "Choice",
       "Choices": [
         {
