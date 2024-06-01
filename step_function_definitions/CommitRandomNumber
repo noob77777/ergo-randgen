@@ -1,0 +1,200 @@
+{
+  "Comment": "CommitRandomNumber Step Function Workflow",
+  "StartAt": "SetTaskStatusAsCommitInProgress",
+  "States": {
+    "SetTaskStatusAsCommitInProgress": {
+      "Type": "Pass",
+      "Next": "CreateRandomNumberGenerationTask",
+      "Result": "COMMIT_IN_PROGRESS",
+      "ResultPath": "$.taskStatus"
+    },
+    "CreateRandomNumberGenerationTask": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-2:330797072184:function:UpdateWorkflowState:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "GetHashTransactionStatus"
+    },
+    "GetHashTransactionStatus": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-2:330797072184:function:GetTransactionStatus:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "IsConfirmed"
+    },
+    "IsConfirmed": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.transactionStatus",
+          "StringEquals": "confirmed",
+          "Next": "SetHashBoxId"
+        }
+      ],
+      "Default": "Wait"
+    },
+    "SetHashBoxId": {
+      "Type": "Pass",
+      "Next": "SubmitCommitTransaction",
+      "Parameters": {
+        "transactionId.$": "$.transactionId",
+        "transactionStatus.$": "$.transactionStatus",
+        "referenceBoxId.$": "$.referenceBoxId",
+        "taskId.$": "$.taskId",
+        "lockingContractAddress.$": "$.lockingContractAddress",
+        "lockingTokenId.$": "$.lockingTokenId",
+        "lockingTokenAmount.$": "$.lockingTokenAmount",
+        "hashBoxId.$": "$.referenceBoxId",
+        "commitBoxId.$": "$.commitBoxId",
+        "revealBoxId.$": "$.revealBoxId",
+        "taskStatus.$": "$.taskStatus"
+      }
+    },
+    "Wait": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "GetHashTransactionStatus"
+    },
+    "SubmitCommitTransaction": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-2:330797072184:function:SubmitCommitTransaction:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "GetCommitTransactionStatus"
+    },
+    "GetCommitTransactionStatus": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-2:330797072184:function:GetTransactionStatus:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Choice"
+    },
+    "Choice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.transactionStatus",
+          "StringEquals": "confirmed",
+          "Next": "SetTaskStatusAsCommitted"
+        }
+      ],
+      "Default": "Wait Again"
+    },
+    "SetTaskStatusAsCommitted": {
+      "Type": "Pass",
+      "Next": "SetCommitBoxId",
+      "Result": "COMMITTED",
+      "ResultPath": "$.taskStatus"
+    },
+    "SetCommitBoxId": {
+      "Type": "Pass",
+      "Next": "UpdateWorkflowStatus",
+      "Parameters": {
+        "transactionId.$": "$.transactionId",
+        "transactionStatus.$": "$.transactionStatus",
+        "referenceBoxId.$": "$.referenceBoxId",
+        "taskId.$": "$.taskId",
+        "lockingContractAddress.$": "$.lockingContractAddress",
+        "lockingTokenId.$": "$.lockingTokenId",
+        "lockingTokenAmount.$": "$.lockingTokenAmount",
+        "hashBoxId.$": "$.hashBoxId",
+        "commitBoxId.$": "$.referenceBoxId",
+        "revealBoxId.$": "$.revealBoxId",
+        "taskStatus.$": "$.taskStatus"
+      }
+    },
+    "UpdateWorkflowStatus": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-2:330797072184:function:UpdateWorkflowState:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "End": true
+    },
+    "Wait Again": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "GetCommitTransactionStatus"
+    }
+  },
+  "TimeoutSeconds": 1800
+}
