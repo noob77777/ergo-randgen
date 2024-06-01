@@ -1,5 +1,4 @@
 {
-  "Comment": "A description of my state machine",
   "StartAt": "GetTransactionStatusLambda",
   "States": {
     "GetTransactionStatusLambda": {
@@ -44,5 +43,6 @@
       "End": true
     }
   },
-  "TimeoutSeconds": 1800
+  "TimeoutSeconds": 1800,
+  "Comment": "Get transaction status lambda"
 }
