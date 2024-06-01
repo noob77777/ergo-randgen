@@ -19,7 +19,7 @@ import java.util.UUID;
 
 // Handler for Register Request
 public class RegisterRandomNumberGenerationHandler implements RequestHandler<RegisterRandomNumberGenerationTaskRequest, RegisterRandomNumberGenerationTaskResponse> {
-    private static final String STATE_MACHINE_ARN = "arn:aws:states:us-east-2:330797072184:stateMachine:GetTransactionStatus";
+    private static final String STATE_MACHINE_ARN = "arn:aws:states:us-east-2:330797072184:stateMachine:CommitRandomNumber";
 
     @Override
     public RegisterRandomNumberGenerationTaskResponse handleRequest(RegisterRandomNumberGenerationTaskRequest req, Context context) {
