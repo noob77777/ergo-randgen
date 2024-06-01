@@ -63,7 +63,7 @@ class CommitTransaction(hashBoxId: String,
 
       val signedTx = prover.sign(unsignedTx)
       val txId = ctx.sendTransaction(signedTx)
-      txId
+      txId.stripPrefix("\"").stripSuffix("\"").trim
     })
   }
 }

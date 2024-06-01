@@ -1,0 +1,48 @@
+{
+  "StartAt": "GetTransactionStatusLambda",
+  "States": {
+    "GetTransactionStatusLambda": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-2:330797072184:function:GetTransactionStatus:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2,
+          "MaxDelaySeconds": 10
+        }
+      ],
+      "Next": "IsConfirmed",
+      "OutputPath": "$.Payload"
+    },
+    "IsConfirmed": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.transactionStatus",
+          "StringEquals": "confirmed",
+          "Next": "Pass"
+        }
+      ],
+      "Default": "Wait"
+    },
+    "Wait": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "GetTransactionStatusLambda"
+    },
+    "Pass": {
+      "Type": "Pass",
+      "End": true
+    }
+  },
+  "TimeoutSeconds": 1800,
+  "Comment": "Get transaction status lambda"
+}
