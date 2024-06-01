@@ -51,8 +51,8 @@ public class RevealRandomNumberHandler implements RequestHandler<RevealRandomNum
             ).buildUnsignedTx();
             return new RevealRandomNumberResponse(
                     req.taskId(),
-                    RandomNumberGenerationTask.TaskStatus.REVEAL_IN_PROGRESS,
-                    txn.toJson());
+                    txn.toJson(),
+                    RandomNumberGenerationTask.TaskStatus.REVEAL_IN_PROGRESS);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
