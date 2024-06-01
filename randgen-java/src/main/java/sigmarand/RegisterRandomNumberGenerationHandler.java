@@ -11,6 +11,7 @@ import sigmarand.model.RegisterRandomNumberGenerationTaskRequest;
 import sigmarand.model.RegisterRandomNumberGenerationTaskResponse;
 import sigmarand.transaction.RegisterTransaction;
 import sigmarand.transaction.model.MUnsignedTransaction;
+import sigmarand.transaction.util.Util;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sfn.SfnClient;
 import software.amazon.awssdk.services.sfn.model.StartExecutionResponse;
@@ -46,7 +47,7 @@ public class RegisterRandomNumberGenerationHandler implements RequestHandler<Reg
     private MUnsignedTransaction registerTransaction(RegisterRandomNumberGenerationTaskRequest req) {
         return new RegisterTransaction(
                 req.address(),
-                req.randomHash().getBytes(),
+                Util.hexToBase64(req.randomHash()),
                 req.lockingContractAddress(),
                 req.lockingTokenId(),
                 req.lockingTokenAmount()
