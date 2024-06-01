@@ -1,0 +1,121 @@
+{
+  "StartAt": "SetTaskStatusAsRevealInProgress",
+  "States": {
+    "SetTaskStatusAsRevealInProgress": {
+      "Type": "Pass",
+      "Next": "UpdateWorkflowStatus",
+      "Result": "REVEAL_IN_PROGRESS",
+      "ResultPath": "$.taskStatus"
+    },
+    "UpdateWorkflowStatus": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-2:330797072184:function:UpdateWorkflowState:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "GetRevealTransactionStatus"
+    },
+    "GetRevealTransactionStatus": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-2:330797072184:function:GetTransactionStatus:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "IsConfirmed"
+    },
+    "IsConfirmed": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.transactionStatus",
+          "StringEquals": "confirmed",
+          "Next": "SetTaskStatusAsCompleted"
+        }
+      ],
+      "Default": "Wait"
+    },
+    "SetTaskStatusAsCompleted": {
+      "Type": "Pass",
+      "Next": "SetRevealBoxId",
+      "Result": "COMPLETED",
+      "ResultPath": "$.taskStatus"
+    },
+    "SetRevealBoxId": {
+      "Type": "Pass",
+      "Next": "UpdateWorkflowStatusToCompleted",
+      "Parameters": {
+        "transactionId.$": "$.transactionId",
+        "transactionStatus.$": "$.transactionStatus",
+        "referenceBoxId.$": "$.referenceBoxId",
+        "taskId.$": "$.taskId",
+        "lockingContractAddress.$": "$.lockingContractAddress",
+        "lockingTokenId.$": "$.lockingTokenId",
+        "lockingTokenAmount.$": "$.lockingTokenAmount",
+        "hashBoxId.$": "$.hashBoxId",
+        "commitBoxId.$": "$.commitBoxId",
+        "revealBoxId.$": "$.referenceBoxId",
+        "taskStatus.$": "$.taskStatus"
+      }
+    },
+    "UpdateWorkflowStatusToCompleted": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "arn:aws:lambda:us-east-2:330797072184:function:UpdateWorkflowState:$LATEST"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 1,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "End": true
+    },
+    "Wait": {
+      "Type": "Wait",
+      "Seconds": 30,
+      "Next": "GetRevealTransactionStatus"
+    }
+  },
+  "Comment": "Reveal Random Number",
+  "TimeoutSeconds": 1800
+}
