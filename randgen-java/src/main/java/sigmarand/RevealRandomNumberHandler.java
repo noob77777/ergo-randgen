@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import sigmarand.client.StepFnInvocator;
 import sigmarand.dao.RandomNumberGenerationTask;
 import sigmarand.dao.RandomNumberGenerationTaskPojo;
@@ -35,11 +36,6 @@ public class RevealRandomNumberHandler implements RequestHandler<RevealRandomNum
                     client.send(request, HttpResponse.BodyHandlers.ofString());
             logger.log("DB response body:\n" + response.body());
             RandomNumberGenerationTaskPojo task = new Gson().fromJson(response.body(), RandomNumberGenerationTaskPojo.class);
-            StartExecutionResponse executionResponse = new StepFnInvocator(
-                    SfnClient.builder().region(Region.US_EAST_2).build(),
-                    STATE_MACHINE_ARN)
-                    .invoke(response.body());
-            logger.log("Execution was successful: " + executionResponse);
             MUnsignedTransaction txn = new RevealTransaction(
                     task.commitBoxId,
                     req.random().getBytes(),
@@ -48,6 +44,12 @@ public class RevealRandomNumberHandler implements RequestHandler<RevealRandomNum
                     task.lockingTokenId,
                     task.lockingTokenAmount
             ).buildUnsignedTx();
+            task.transactionId = txn.id();
+            StartExecutionResponse executionResponse = new StepFnInvocator(
+                    SfnClient.builder().region(Region.US_EAST_2).build(),
+                    STATE_MACHINE_ARN)
+                    .invoke(new GsonBuilder().serializeNulls().create().toJson(task));
+            logger.log("Execution was successful: " + executionResponse);
             return new RevealRandomNumberResponse(
                     req.taskId(),
                     txn.toJson(),
