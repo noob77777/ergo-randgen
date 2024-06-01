@@ -3,7 +3,7 @@ package sigmarand.transaction
 import org.ergoplatform.appkit.{Address, ConstantsBuilder, ErgoToken, ErgoValue, NetworkType, Parameters, RestApiErgoClient, SecretString}
 import org.ergoplatform.appkit.impl.ErgoScriptContract
 import sigmarand.transaction.constant.Constant.{ADDRESS, MNEMONIC, NODE_API_KEY, NODE_URL}
-import sigmarand.transaction.constant.Contract.COMMIT_TRANSACTION_SCRIPT
+import sigmarand.transaction.constant.Contract.COMMIT_UTXO_SCRIPT
 import sigmarand.transaction.util.Util.hexToBase64
 
 class CommitTransaction(hashBoxId: String,
@@ -27,11 +27,11 @@ class CommitTransaction(hashBoxId: String,
     client.execute(ctx => {
       val commitTransactionScript = ErgoScriptContract.create(
         ConstantsBuilder.create()
-          .item("runtimePropositionBytes", Address.create(lockingContractAddress).toPropositionBytes)
-          .item("tokenId", hexToBase64(lockingTokenId))
-          .item("tokenAmount", lockingTokenAmount.longValue())
+          .item("_RUNTIME_PROPOSITION_BYTES", Address.create(lockingContractAddress).toPropositionBytes)
+          .item("_TOKEN_ID", hexToBase64(lockingTokenId))
+          .item("_TOKEN_AMOUNT", lockingTokenAmount.longValue())
           .build(),
-        COMMIT_TRANSACTION_SCRIPT,
+        COMMIT_UTXO_SCRIPT,
         NetworkType.MAINNET
       )
       val contractAddress = commitTransactionScript.toAddress

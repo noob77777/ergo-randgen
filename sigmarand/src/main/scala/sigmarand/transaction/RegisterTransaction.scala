@@ -3,7 +3,7 @@ package sigmarand.transaction
 import org.ergoplatform.appkit.impl.ErgoScriptContract
 import org.ergoplatform.appkit.{Address, BoxOperations, ConstantsBuilder, ErgoId, ErgoToken, ErgoValue, NetworkType, Parameters, RestApiErgoClient}
 import sigmarand.transaction.constant.Constant.{ADDRESS, NODE_API_KEY, NODE_URL}
-import sigmarand.transaction.constant.Contract.{COMMIT_TRANSACTION_SCRIPT, REGISTER_TRANSACTION_SCRIPT}
+import sigmarand.transaction.constant.Contract.{COMMIT_UTXO_SCRIPT, HASH_UTXO_SCRIPT}
 import sigmarand.transaction.model.MUnsignedTransaction
 import sigmarand.transaction.util.Util.hexToBase64
 
@@ -33,23 +33,23 @@ class RegisterTransaction(address: String,
 
       val commitTransactionScript = ErgoScriptContract.create(
         ConstantsBuilder.create()
-          .item("runtimePropositionBytes", Address.create(lockingContractAddress).toPropositionBytes)
-          .item("tokenId", hexToBase64(lockingTokenId))
-          .item("tokenAmount", lockingTokenAmount.longValue())
+          .item("_RUNTIME_PROPOSITION_BYTES", Address.create(lockingContractAddress).toPropositionBytes)
+          .item("_TOKEN_ID", hexToBase64(lockingTokenId))
+          .item("_TOKEN_AMOUNT", lockingTokenAmount.longValue())
           .build(),
-        COMMIT_TRANSACTION_SCRIPT,
+        COMMIT_UTXO_SCRIPT,
         NetworkType.MAINNET
       )
       val registerTransactionContract = ErgoScriptContract.create(
         ConstantsBuilder.create()
-          .item("clientPK", clientAddress.getPublicKey)
-          .item("serverPK", serverAddress.getPublicKey)
-          .item("deadline", deadline)
-          .item("runtimePropositionBytes", commitTransactionScript.toAddress.toPropositionBytes)
-          .item("tokenId", hexToBase64(lockingTokenId))
-          .item("tokenAmount", lockingTokenAmount.longValue())
+          .item("_CLIENT_PK", clientAddress.getPublicKey)
+          .item("_SERVER_PK", serverAddress.getPublicKey)
+          .item("_DEADLINE", deadline)
+          .item("_RUNTIME_PROPOSITION_BYTES", commitTransactionScript.toAddress.toPropositionBytes)
+          .item("_TOKEN_ID", hexToBase64(lockingTokenId))
+          .item("_TOKEN_AMOUNT", lockingTokenAmount.longValue())
           .build(),
-        REGISTER_TRANSACTION_SCRIPT,
+        HASH_UTXO_SCRIPT,
         NetworkType.MAINNET
       )
       val contractAddress = registerTransactionContract.toAddress

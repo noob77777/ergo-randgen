@@ -1,9 +1,16 @@
 package sigmarand.transaction.constant
 
 object Contract {
-  val REGISTER_TRANSACTION_SCRIPT: String =
+  val HASH_UTXO_SCRIPT: String =
     s"""
        |{
+       |  val clientPK = _CLIENT_PK
+       |  val serverPK = _SERVER_PK
+       |  val deadline = _DEADLINE
+       |  val runtimePropositionBytes = _RUNTIME_PROPOSITION_BYTES
+       |  val tokenId = _TOKEN_ID
+       |  val tokenAmount = _TOKEN_AMOUNT
+       |
        |  val commitBox = OUTPUTS(0)
        |  val refund = HEIGHT > deadline
        |  val propositionCondition = runtimePropositionBytes == commitBox.propositionBytes
@@ -12,9 +19,13 @@ object Contract {
        |  clientPK && sigmaProp(refund) || serverPK && sigmaProp(propositionCondition && tokenCondition && sizeCondition)
        |}
        |""".stripMargin
-  val COMMIT_TRANSACTION_SCRIPT: String =
+  val COMMIT_UTXO_SCRIPT: String =
     s"""
        |{
+       |  val runtimePropositionBytes = _RUNTIME_PROPOSITION_BYTES
+       |  val tokenId = _TOKEN_ID
+       |  val tokenAmount = _TOKEN_AMOUNT
+       |
        |  val commitBox = INPUTS(0)
        |  val revealBox = OUTPUTS(0)
        |  val hashCondition = commitBox.R4[Coll[Byte]].get == blake2b256(revealBox.R4[Coll[Byte]].get)
