@@ -1,6 +1,9 @@
 import org.ergoplatform.appkit.config.ErgoToolConfig
 import scorex.crypto.hash.Blake2b256
+import sigmarand.transaction.util.Util
 import sigmarand.transaction.{CommitTransaction, RegisterTransaction, RevealTransaction}
+
+import java.util.UUID
 
 object Playground extends App {
   // config
@@ -11,25 +14,25 @@ object Playground extends App {
   val MNEMONIC = conf.getParameters.get("mnemonic")
   val ADDRESS = conf.getParameters.get("address")
 
-  val randomA = Blake2b256("randomA")
-  val hashRandomA = Blake2b256(randomA)
-  val randomB = Blake2b256("randomB")
+  val randomA = "36845d2ac36444a35f314f001a93e708".getBytes
+  val hashRandomA = Util.hexToBase64("54e15ad6e8b896861bd7f4fddce11c9a94d4a6286004d4d3ab6b3664b361ef35")
+  val randomB = Blake2b256(UUID.randomUUID.toString)
 
-  //  val registerTransaction = new RegisterTransaction(ADDRESS,
-  //    hashRandomA,
-  //    ADDRESS,
-  //    "d71693c49a84fbbecd4908c94813b46514b18b67a99952dc1e6e4791556de413",
-  //    1)
-  //    .buildUnsignedTx()
+  //    val registerTransaction = new RegisterTransaction(ADDRESS,
+  //      hashRandomA,
+  //      ADDRESS,
+  //      "d71693c49a84fbbecd4908c94813b46514b18b67a99952dc1e6e4791556de413",
+  //      1)
+  //      .buildUnsignedTx()
   //  val commitTransaction = new CommitTransaction(
-  //    "01ba300a41e5782a543681a136ac63d66a76a22bed6950e32692be4cd9680b48",
+  //    "9e3606231364ec3dd6f05dc620b7e4fc2e59a7878f2d19c3cb0280347e0b6655",
   //    randomB,
   //    ADDRESS,
   //    "d71693c49a84fbbecd4908c94813b46514b18b67a99952dc1e6e4791556de413",
   //    1
   //  ).submitTx()
   //  val revealTransaction = new RevealTransaction(
-  //    "3a1a35bffc08ac57eb6e7360889b0f5e97f2672f61721b7f1f36b6fd2b41dd89",
+  //    "fdca20af3146c5aabc34e09f38f12991194103588aaa057be6e26e5bb272f883",
   //    randomA,
   //    ADDRESS,
   //    ADDRESS,

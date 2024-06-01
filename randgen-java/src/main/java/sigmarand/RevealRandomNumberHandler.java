@@ -11,7 +11,6 @@ import sigmarand.model.RevealRandomNumberRequest;
 import sigmarand.model.RevealRandomNumberResponse;
 import sigmarand.transaction.RevealTransaction;
 import sigmarand.transaction.model.MUnsignedTransaction;
-import sigmarand.transaction.util.Util;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sfn.SfnClient;
 import software.amazon.awssdk.services.sfn.model.StartExecutionResponse;
@@ -43,7 +42,7 @@ public class RevealRandomNumberHandler implements RequestHandler<RevealRandomNum
             logger.log("Execution was successful: " + executionResponse);
             MUnsignedTransaction txn = new RevealTransaction(
                     task.commitBoxId,
-                    Util.hexToBase64(req.random()),
+                    req.random().getBytes(),
                     req.address(),
                     task.lockingContractAddress,
                     task.lockingTokenId,
@@ -51,8 +50,8 @@ public class RevealRandomNumberHandler implements RequestHandler<RevealRandomNum
             ).buildUnsignedTx();
             return new RevealRandomNumberResponse(
                     req.taskId(),
-                    RandomNumberGenerationTask.TaskStatus.REVEAL_IN_PROGRESS,
-                    txn.toJson());
+                    txn.toJson(),
+                    RandomNumberGenerationTask.TaskStatus.REVEAL_IN_PROGRESS);
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }

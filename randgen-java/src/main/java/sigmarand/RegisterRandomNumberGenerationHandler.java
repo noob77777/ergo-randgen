@@ -3,7 +3,6 @@ package sigmarand;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import sigmarand.client.StepFnInvocator;
 import sigmarand.dao.RandomNumberGenerationTask;
@@ -41,7 +40,8 @@ public class RegisterRandomNumberGenerationHandler implements RequestHandler<Reg
                 STATE_MACHINE_ARN)
                 .invoke(new GsonBuilder().serializeNulls().create().toJson(task));
         logger.log("Invocation successful: " + response.executionArn());
-        return new RegisterRandomNumberGenerationTaskResponse(task.taskId(), registerTransaction.toJson());
+        return new RegisterRandomNumberGenerationTaskResponse(
+                task.taskId(), registerTransaction.toJson(), RandomNumberGenerationTask.TaskStatus.COMMIT_IN_PROGRESS);
     }
 
     private MUnsignedTransaction registerTransaction(RegisterRandomNumberGenerationTaskRequest req) {

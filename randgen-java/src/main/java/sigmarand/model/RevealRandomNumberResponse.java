@@ -4,6 +4,7 @@ import sigmarand.dao.RandomNumberGenerationTask;
 
 public record RevealRandomNumberResponse(
         String taskId,
-        RandomNumberGenerationTask.TaskStatus taskStatus,
-        String unsignedTransaction
-) {}
+        String unsignedTransaction,
+        RandomNumberGenerationTask.TaskStatus taskStatus
+) {
+}
