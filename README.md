@@ -41,12 +41,12 @@ One key observation here is participant A knows the random number before partici
 Once the random number is committed on-chain we can use the value for our dApp. The next section details how such a protocol can be implemented on Ergo.
 
 ## Implementation - Overview
-To start with, let us model the steps in terms of transactions. We will be referring to participant A as the client and participant B as the server for the rest of this document. In the start state, the client has a token which needs to be tagged with a randomly generated number. That is, after the protocol has been executed successfully, we must lock the token in a box which has a user-defined guard script and a random number in one of the registers(for this implementation we will always use R4) of the box.
+To start with, let us model the steps in terms of transactions. We will be referring to participant A as the client and participant B as the server for the rest of this document. In the start state, the client has a token which needs to be tagged with a randomly generated number. That is, after the protocol has been executed successfully, we must lock the token in a box which has a user-defined guard script and a random number in one of the registers(for this implementation we will always use R6) of the box.
 
-![overview drawio](https://github.com/noob77777/ergo-randgen/assets/42897033/7042d6cb-4cef-44a5-a3f5-4367ee4d797d)
+![overview](https://github.com/noob77777/ergo-randgen/assets/42897033/4de2e6a4-7757-401c-b5e6-415184817e6b)
 
 
-It can also be the case that after the client submits the token and hash(randomA) as the first step, the server doesn’t act on it. For such cases it must be possible to refund the token, but only after a set threshold time (say 60 blocks or 2 hours). Once the server has revealed randomB, the token can be locked to the contract defined by the application by revealing randomA. Once the token is locked in the contract, it is the application's responsibility to use the token and the random number in R4 for further processing.
+It can also be the case that after the client submits the token and hash(randomA) as the first step, the server doesn’t act on it. For such cases it must be possible to refund the token, but only after a set threshold time (say 60 blocks or 2 hours). Once the server has revealed randomB, the token can be locked to the contract defined by the application by revealing randomA. Once the token is locked in the contract, it is the application's responsibility to use the token and the random number in R6 for further processing.
 
 ## Implementation - Design
 Overall we have the following components. The protocol needs 3 transactions to generate the random number.
@@ -76,7 +76,7 @@ RegisterRandomNumberGenerationTaskResponse
 {
 	taskId: string;
 	unsignedTransaction: UnsignedTransaction;
-  tastStatus: COMMIT_IN_PROGRESS;
+        tastStatus: COMMIT_IN_PROGRESS;
 }
 ```
 
@@ -84,11 +84,11 @@ Once a register call is made, the service will start the CommitRandomNumber step
 
 ![commit](https://github.com/noob77777/ergo-randgen/assets/42897033/a3c650c2-82a7-4246-bf12-e59d862f853e)
 
-### GET GetRandomNumberGenerationStatus
+### GET GetRandomNumberGenerationTask
 The client can query the task_id returned and check for current task status. This will be required to know when the client can reveal the random seed.
 
 ```
-GetRandomNumberGenerationStatusResponse
+GetRandomNumberGenerationTaskResponse
 {
 	taskId: string;
 	lockingContractAddress: string;
@@ -97,7 +97,7 @@ GetRandomNumberGenerationStatusResponse
 	hashBoxId?: string;
 	commitBoxId?: string;
 	revealBoxId?: string;
-  taskStatus: NOT_STARTED|COMMIT_IN_PROGRESS|COMMITTED|REVEAL_IN_PROGRESS|COMPLETED;
+        taskStatus: NOT_STARTED|COMMIT_IN_PROGRESS|COMMITTED|REVEAL_IN_PROGRESS|COMPLETED;
 }
 ```
 When the task status is in “COMMITTED” state, it means that the CommitRandomNumber workflow is complete. The client must now reveal its part of the random number.
@@ -110,16 +110,16 @@ The client must reveal its part of the random number to complete the protocol. O
 ```
 RevealRandomNumberRequest
 {
-  address: string;	
-  taskId: string;
-  random: number;
+        address: string;	
+        taskId: string;
+        random: number;
 }
 
 RevealRandomNumberResponse
 {
 	taskId: string;
 	unsignedTransaction: UnsignedTransaction;
-  tastStatus: REVEAL_IN_PROGRESS;
+        tastStatus: REVEAL_IN_PROGRESS;
 }
 ```
 
