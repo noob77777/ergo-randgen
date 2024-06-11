@@ -16,7 +16,8 @@ object Contract {
        |  val propositionCondition = runtimePropositionBytes == commitBox.propositionBytes
        |  val sizeCondition = INPUTS.size == 1 && OUTPUTS.size == 2
        |  val tokenCondition = commitBox.tokens(0)._1 == tokenId && commitBox.tokens(0)._2 == tokenAmount
-       |  clientPK && sigmaProp(refund) || serverPK && sigmaProp(propositionCondition && tokenCondition && sizeCondition)
+       |  val feeCondition = OUTPUTS(1).value == 1000000L
+       |  clientPK && sigmaProp(refund) || serverPK && sigmaProp(propositionCondition && tokenCondition && sizeCondition && feeCondition)
        |}
        |""".stripMargin
   val COMMIT_UTXO_SCRIPT: String =
@@ -33,7 +34,8 @@ object Contract {
        |  val propositionCondition = runtimePropositionBytes == revealBox.propositionBytes
        |  val sizeCondition = INPUTS.size == 1 && OUTPUTS.size == 2
        |  val tokenCondition = revealBox.tokens(0)._1 == tokenId && revealBox.tokens(0)._2 == tokenAmount
-       |  sigmaProp(hashCondition && commitCondition && propositionCondition && tokenCondition && sizeCondition)
+       |  val feeCondition = OUTPUTS(1).value == 1000000L
+       |  sigmaProp(hashCondition && commitCondition && propositionCondition && tokenCondition && sizeCondition && feeCondition)
        |}
        |""".stripMargin
 }
